@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h3 class="text-center mb-4">Transaksi</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn bg-primary text-white rounded mx-3" style="cursor: pointer; font-size: 0.7rem" id="tambah_transaksi">Tambah </button>
+        <form id="searchForm" class="d-flex" style="width: 300px;">
+            <input type="search" id="keyword" class="form-control me-2" placeholder="Cari Supplier..." aria-label="Search">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            Daftar Supplier
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Tanggal Transaksi</th>
+                        <th>Jenis Transaksi</th>
+                        <th>Nama Barang</th>
+                        <th>Total</th>
+                        <th>Supplier</th>
+                    </tr>
+                    </thead>
+                    <tbody id="transaksiList">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Transaksi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label for="barangSelect" class="form-label">Pilih Barang</label>
+                        <select id="barangSelect" class="form-select" required>
+                            <option value="" disabled selected>Select Barang</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="supplierSelect" class="form-label">Pilih Supplier</label>
+                        <select id="supplierSelect" class="form-select" required>
+                            <option value="" disabled selected>Select Supplier</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDateTransaksi" class="form-label">Tanggal Transaksi</label>
+                        <input type="date" class="form-control" id="editDateTransaksi" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTypeTransaksi" class="form-label">Tipe </label>
+                        <select id="editTypeTransaksi" class="form-select" required>
+                            <option value="" disabled selected>Select Tipe</option>
+                            <option value="masuk">Masuk</option>
+                            <option value="keluar">Keluar</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTotal" class="form-label">Total</label>
+                        <input type="number" class="form-control" id="editTotal" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function fetchBarang() {
+        fetch("http://localhost:8080/api/barang", {
+            method: 'GET'
+        }).then(response => response.json())
+            .then(data => {
+                const barangSelect = document.getElementById("barangSelect");
+                data.data.forEach(item => {
+                    let option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    barangSelect.appendChild(option);
+                });
+            }).catch(error => console.error('Error fetching Barang:', error));
+    }
+
+    function fetchSupplier() {
+        fetch("http://localhost:8080/api/supplier", {
+            method: 'GET'
+        }).then(response => response.json())
+            .then(data => {
+                const supplierSelect = document.getElementById("supplierSelect");
+                data.data.forEach(item => {
+                    let option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    supplierSelect.appendChild(option);
+                });
+            }).catch(error => console.error('Error fetching Supplier:', error));
+    }
+
+    fetchBarang()
+    fetchSupplier()
+    document.getElementById("tambah_transaksi").addEventListener("click", function () {
+        clearEditForm();
+        document.getElementById("editForm").removeAttribute("data-id");
+        var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        editModal.show();
+    });
+
+    function clearEditForm() {
+        document.getElementById("barangSelect").value = "";
+        document.getElementById("supplierSelect").value = "";
+        document.getElementById("editDateTransaksi").value = "";
+        document.getElementById("editTypeTransaksi").value = "";
+        document.getElementById("editTotal").value = "";
+    }
+
+    document.getElementById("editForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+
+        var id = this.getAttribute("data-id");
+        var barangId = document.getElementById("barangSelect").value;
+        var supplierId = document.getElementById("supplierSelect").value;
+        var date = document.getElementById("editDateTransaksi").value;
+        var dateObj = new Date(date)
+        var epochTime = Math.floor(dateObj.getTime()/1000)
+        var type = document.getElementById("editTypeTransaksi").value;
+        var total = document.getElementById("editTotal").value;
+        date = epochTime
+
+        if (id) {
+            fetchUpdate(id, { name, barangId, supplierId, date, type,total });
+        } else {
+            if(type === "masuk"){
+                fetchAddIn({ name, barangId, supplierId, date, type,total })
+            }else{
+                fetchAddOut({ name, barangId, supplierId, date, type,total })
+            }
+        }
+    });
+
+    function fetchUpdate(id, data) {
+        fetch(`http://localhost:8080/api/transaksi/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Item updated successfully:', data);
+            fetchAll();
+            var editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+            editModal.hide();
+        }).catch(error => {
+            console.error('Error updating item:', error);
+            alert('Error updating item. Please try again.');
+        });
+    }
+
+    function fetchAddIn(data) {
+        fetch(`http://localhost:8080/api/transaksi/in`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Item added successfully:', data);
+            fetchAll();
+            var editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+            editModal.hide();
+        }).catch(error => {
+            console.error('Error adding item:', error);
+            alert('Error adding item. Please try again.');
+        });
+    }
+
+    function fetchAddOut(data) {
+        fetch(`http://localhost:8080/api/transaksi/out`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Item added successfully:', data);
+            fetchAll();
+            var editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+            editModal.hide();
+        }).catch(error => {
+            console.error('Error adding item:', error);
+            alert('Error adding item. Please try again.');
+        });
+    }
+
+    function fetchAll() {
+        fetch("http://localhost:8080/api/transaksi", {
+            method: 'GET'
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            updateTransaksiList(data.data);
+        }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+    fetchAll()
+    function updateTransaksiList(items) {
+        const transaksiList = document.getElementById("transaksiList");
+        transaksiList.innerHTML = "";
+
+        items.forEach(item => {
+            date = new Date(item.date * 1000).toLocaleDateString()
+            let newRow = `<tr>
+                <td>${date}</td>
+                <td>${item.type}</td>
+                <td>${item.barang.name}</td>
+                <td>${item.total}</td>
+                <td>${item.supplier.name}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm editBtn" data-id="${item.id}" data-bs-toggle="modal">Edit</button>
+                    <button class="btn btn-danger btn-sm deleteBtn" data-id="${item.id}">Delete</button>
+                </td>
+            </tr>`;
+            transaksiList.innerHTML += newRow;
+        })
+
+
+        document.querySelectorAll('.editBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                fetchItemForEdit(itemId);
+            });
+        });
+
+        document.querySelectorAll('.deleteBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                fetchDelete(itemId);
+            });
+        });
+    }
+
+    function fetchItemForEdit(id) {
+        fetch(`http://localhost:8080/api/transaksi/${id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            const item = data.data;
+
+            document.getElementById("barangSelect").value = item.barang.id;
+            document.getElementById("supplierSelect").value = item.supplier ? item.supplier.id : "";
+
+            const date = new Date(item.date * 1000);
+            const formattedDate = date.toISOString().split('T')[0]; // Mengambil bagian 'YYYY-MM-DD'
+            document.getElementById("editDateTransaksi").value = formattedDate;
+
+            document.getElementById("editTypeTransaksi").value = item.type;
+            document.getElementById("editTotal").value = item.total;
+
+            document.getElementById("editForm").setAttribute("data-id", id);
+
+            var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }).catch(error => {
+            console.error("Error fetching item for edit:", error);
+        });
+    }
+
+    function fetchDelete(id) {
+        fetch(`http://localhost:8080/api/transaksi/${id}`, {
+            method: "DELETE"
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Item deleted successfully:', data);
+                fetchAll();
+            })
+            .catch(err => {
+                console.error("Error ", err);
+            });
+    }
+
+    document.getElementById("searchForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const keyword = document.getElementById("keyword").value;
+        fetchSearch(keyword);
+    });
+
+    function fetchSearch(keyword) {
+        fetch(`http://localhost:8080/api/transaksi/search?keyword=${encodeURIComponent(keyword)}`, {
+            method: 'GET'
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            updateTransaksiList(data.data);
+        }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+</script>
+</body>
+</html>

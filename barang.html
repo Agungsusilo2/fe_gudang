@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Barang</title>
+    <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h3 class="text-center mb-4">Management Barang</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn bg-primary text-white rounded mx-3" style="cursor: pointer; font-size: 0.7rem" id="tambah_barang">Tambah Barang</button>
+        <form id="searchForm" class="d-flex" style="width: 300px;">
+            <input type="search" id="keyword" class="form-control me-2" placeholder="Cari barang..." aria-label="Search">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            Daftar Barang
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Nama Barang</th>
+                        <th>Kategori</th>
+                        <th>Harga</th>
+                        <th>Stock</th>
+                        <th>Description</th>
+                        <th>Aksi</th>
+                    </tr>
+                    </thead>
+                    <tbody id="barangList">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Barang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label for="editNamaBarang" class="form-label">Nama Barang</label>
+                        <input type="text" class="form-control" id="editNamaBarang" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editKategoriBarang" class="form-label">Kategori</label>
+                        <input type="text" class="form-control" id="editKategoriBarang" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editHargaBarang" class="form-label">Harga</label>
+                        <input type="number" class="form-control" id="editHargaBarang" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStok" class="form-label">Stok</label>
+                        <input type="number" class="form-control" id="editStok" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editdescriptionBarang" class="form-label">Deskripsi</label>
+                        <input type="text" class="form-control" id="editdescriptionBarang" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById("tambah_barang").addEventListener("click", function () {
+        clearEditForm();
+        document.getElementById("editForm").removeAttribute("data-id");
+        var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        editModal.show();
+    });
+
+    function clearEditForm() {
+        document.getElementById("editNamaBarang").value = "";
+        document.getElementById("editKategoriBarang").value = "";
+        document.getElementById("editHargaBarang").value = "";
+        document.getElementById("editStok").value = "";
+        document.getElementById("editdescriptionBarang").value = "";
+    }
+
+    fetchAll();
+
+    document.getElementById("searchForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const keyword = document.getElementById("keyword").value;
+        fetchSearch(keyword);
+    });
+
+    function fetchSearch(keyword) {
+        fetch(`http://localhost:8080/api/barang/search?keyword=${encodeURIComponent(keyword)}`, {
+            method: 'GET'
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            updateBarangList(data.data);
+        }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+    function fetchAll() {
+        fetch("http://localhost:8080/api/barang", {
+            method: 'GET'
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            updateBarangList(data.data);
+        }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+    function updateBarangList(items) {
+        const barangList = document.getElementById("barangList");
+        barangList.innerHTML = ""; // Clear previous results
+
+        items.forEach(item => {
+            let newRow = `<tr>
+                <td>${item.name}</td>
+                <td>${item.category}</td>
+                <td>Rp. ${item.price}</td>
+                <td>${item.stock}</td>
+                <td>${item.description}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm editBtn" data-id="${item.id}" data-bs-toggle="modal">Edit</button>
+                    <button class="btn btn-danger btn-sm deleteBtn" data-id="${item.id}">Delete</button>
+                </td>
+            </tr>`;
+            barangList.innerHTML += newRow;
+        });
+
+        document.querySelectorAll('.editBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                fetchItemForEdit(itemId);
+            });
+        });
+
+        document.querySelectorAll('.deleteBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                fetchDelete(itemId);
+            });
+        });
+    }
+
+    function fetchItemForEdit(id) {
+        fetch(`http://localhost:8080/api/barang/${id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            const item = data.data;
+            document.getElementById("editNamaBarang").value = item.name;
+            document.getElementById("editKategoriBarang").value = item.category;
+            document.getElementById("editHargaBarang").value = item.price;
+            document.getElementById("editStok").value = item.stock;
+            document.getElementById("editdescriptionBarang").value = item.description;
+
+            document.getElementById("editForm").setAttribute("data-id", id);
+            var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }).catch(error => {
+            console.error("Error fetching item for edit:", error);
+        });
+    }
+
+    document.getElementById("editForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        var id = this.getAttribute("data-id");
+        var name = document.getElementById("editNamaBarang").value;
+        var category = document.getElementById("editKategoriBarang").value;
+        var price = document.getElementById("editHargaBarang").value;
+        var stock = document.getElementById("editStok").value;
+        var description = document.getElementById("editdescriptionBarang").value;
+
+        if (id) {
+            fetchUpdate(id, { name, category, price, stock, description });
+        } else {
+            fetchAdd({ name, category, price, stock, description });
+        }
+    });
+
+    function fetchUpdate(id, data) {
+        fetch(`http://localhost:8080/api/barang/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Item updated successfully:', data);
+            fetchAll(); // Refresh the list
+            var editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+            editModal.hide(); // Hide the modal after update
+        }).catch(error => {
+            console.error('Error updating item:', error);
+            alert('Error updating item. Please try again.');
+        });
+    }
+
+    function fetchAdd(data) {
+        fetch(`http://localhost:8080/api/barang`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Item added successfully:', data);
+            fetchAll();
+            var editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+            editModal.hide();
+        }).catch(error => {
+            console.error('Error adding item:', error);
+            alert('Error adding item. Please try again.');
+        });
+    }
+
+    function fetchDelete(id) {
+        fetch(`http://localhost:8080/api/barang/${id}`, {
+            method: "DELETE"
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Item deleted successfully:', data);
+                fetchAll(); // Refresh the list after deletion
+            })
+            .catch(err => {
+                console.error("Error ", err);
+            });
+    }
+</script>
+</body>
+</html>

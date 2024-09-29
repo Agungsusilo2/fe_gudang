@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="height: 100vh">
+        <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+            <div class="card border-0">
+                <div class="card-header bg-transparent text-center border-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                    </svg>
+                </div>
+                <div class="card-body">
+                    <form id="loginForm">
+                        <div class="form-group mb-3">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control" id="username" placeholder="Enter your email">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" placeholder="Enter your password">
+                        </div>
+                        <div class="mb-3">
+                            <small>Belum punya akun? <a href="#" class="text-decoration-none">Silahkan daftar disini</a></small>
+                        </div>
+                        <div class="text-center w-100">
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        loginUser(username, password);
+    });
+
+
+
+    function loginUser(username,password){
+        const requestData = {
+            username:username,
+            password:password
+        }
+        fetch("http://localhost:8080/api/user/auth", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                window.location.href = "dashboard.html";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Login failed. Please try again.');
+            });
+    }
+</script>
+</body>
+</html>

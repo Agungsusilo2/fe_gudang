@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+    <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h3 class="text-center mb-4">User Management</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn bg-primary text-white rounded mx-3" style="cursor: pointer; font-size: 0.7rem" id="tambah_user">Tambah User</button>
+        <form id="searchForm" class="d-flex" style="width: 300px;">
+            <input type="search" id="keyword" class="form-control me-2" placeholder="Cari User..." aria-label="Search">
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            Daftar User
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Aksi</th>
+                    </tr>
+                    </thead>
+                    <tbody id="userList">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel">Tambah User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label for="addUsernameUser" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="addUsernameUser" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addRoleUser" class="form-label">Role</label>
+                        <select id="addRoleUser" class="form-select" required>
+                            <option value="" disabled selected>Select Role</option>
+                            <option value="admin">Admin</option>
+                            <option value="operator">Operator</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addPasswordUser" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="addPasswordUser" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addTryPasswordUser" class="form-label">Konfirmasi Password</label>
+                        <input type="password" class="form-control" id="addTryPasswordUser" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit User -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label for="editUsernameUser" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="editUsernameUser" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOldPasswordUser" class="form-label">Password Lama</label>
+                        <input type="password" class="form-control" id="editOldPasswordUser" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editNewPasswordUser" class="form-label">Password Baru</label>
+                        <input type="password" class="form-control" id="editNewPasswordUser" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTryNewPasswordUser" class="form-label">Konfirmasi Password Baru</label>
+                        <input type="password" class="form-control" id="editTryNewPasswordUser" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById("tambah_user").addEventListener("click", function () {
+        clearAddForm();
+        var addModal = new bootstrap.Modal(document.getElementById('addModal'));
+        addModal.show();
+    });
+
+    document.querySelectorAll('.editBtn').forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+            fetchItemForEdit(itemId);
+        });
+    });
+
+    function clearAddForm() {
+        document.getElementById("addUsernameUser").value = "";
+        document.getElementById("addRoleUser").value = "";
+        document.getElementById("addPasswordUser").value = "";
+        document.getElementById("addTryPasswordUser").value = "";
+    }
+
+    document.getElementById("addForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        var username = document.getElementById("addUsernameUser").value;
+        var password = document.getElementById("addPasswordUser").value;
+        var tryPassword = document.getElementById("addTryPasswordUser").value;
+        var role = document.getElementById("addRoleUser").value;
+
+        if(password !== tryPassword){
+            alert("Password dan Konfirmasi Password tidak cocok");
+            return;
+        }
+
+        fetchAdd({ username, password, role });
+    });
+
+    document.getElementById("editForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        var id = this.getAttribute("data-id");
+        var username = document.getElementById("editUsernameUser").value;
+        var oldPassword = document.getElementById("editOldPasswordUser").value;
+        var password = document.getElementById("editNewPasswordUser").value;
+        var tryNewPassword = document.getElementById("editTryNewPasswordUser").value;
+
+        if(password !== tryNewPassword){
+            alert("Password baru dan konfirmasi password tidak cocok!");
+            return;
+        }
+
+        fetchUpdate(id, { username, oldPassword, password });
+    });
+
+    function fetchAdd(data) {
+        fetch(`http://localhost:8080/api/user/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('User added successfully:', data);
+            fetchAll();
+            var addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+            addModal.hide();
+        }).catch(error => {
+            console.error('Error adding user:', error);
+            alert('Error adding user. Please try again.');
+        });
+    }
+
+    function fetchUpdate(id, data) {
+        fetch(`http://localhost:8080/api/users/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            console.log('User updated successfully:', data);
+            fetchAll();
+            var editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+            editModal.hide();
+        }).catch(error => {
+            console.error('Error updating user:', error);
+            alert('Error updating user. Please try again.');
+        });
+    }
+
+    function fetchAll() {
+        fetch("http://localhost:8080/api/users", {
+            method: 'GET'
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            updateUserList(data.data);
+        }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+    document.getElementById("searchForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const keyword = document.getElementById("keyword").value;
+        fetchSearch(keyword);
+    });
+
+    function fetchSearch(keyword) {
+        fetch(`http://localhost:8080/api/users/search?keyword=${encodeURIComponent(keyword)}`, {
+            method: 'GET'
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            updateUserList(data.data);
+        }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+    function updateUserList(items) {
+        const userList = document.getElementById("userList");
+        userList.innerHTML = "";
+
+        items.forEach(item => {
+            let newRow = `<tr>
+                <td>${item.username}</td>
+                <td>${item.role}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm editBtn" data-id="${item.id}">Edit</button>
+                    <button class="btn btn-danger btn-sm deleteBtn" data-id="${item.id}">Delete</button>
+                </td>
+            </tr>`;
+            userList.innerHTML += newRow;
+        });
+
+        document.querySelectorAll('.editBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                fetchItemForEdit(itemId);
+            });
+        });
+
+        document.querySelectorAll('.deleteBtn').forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                fetchDelete(itemId);
+            });
+        });
+    }
+
+    function fetchItemForEdit(id) {
+        fetch(`http://localhost:8080/api/users/${id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            const item = data.data;
+            document.getElementById("editUsernameUser").value = item.username;
+            document.getElementById("editForm").setAttribute("data-id", id);
+            var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        }).catch(error => {
+            console.error("Error fetching item for edit:", error);
+        });
+    }
+
+    function fetchDelete(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus user ini?")) {
+            fetch(`http://localhost:8080/api/users/${id}`, {
+                method: "DELETE"
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            }).then(data => {
+                fetchAll();
+            }).catch(err => {
+                console.error("Error while deleting:", err);
+                alert('Error while deleting the user. Please try again.');
+            });
+        }
+    }
+
+    window.onload = function() {
+        fetchAll();
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Manajemen</title>
+    <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h3 class="text-center mb-4">Laporan Manajemen</h3>
+
+    <div class="mb-4">
+        <h5>Laporan Stok Menipis</h5>
+        <label for="limit">Batas Jumlah Stok:</label>
+        <input type="number" id="limit" class="form-control" value="10" min="1">
+        <button class="btn btn-primary mt-2" id="stockLessBtn">Tampilkan Laporan</button>
+        <div id="stockLessResult" class="mt-3"></div>
+    </div>
+
+    <div class="mb-4">
+        <h5>Laporan Transaksi Berdasarkan Tanggal</h5>
+        <label for="startDate">Tanggal Mulai:</label>
+        <input type="date" id="startDate" class="form-control">
+        <label for="endDate">Tanggal Selesai:</label>
+        <input type="date" id="endDate" class="form-control">
+        <button class="btn btn-primary mt-2" id="transaksiByDateBtn">Tampilkan Laporan</button>
+        <div id="transaksiByDateResult" class="mt-3"></div>
+    </div>
+
+    <div class="mb-4">
+        <h5>Laporan Transaksi Berdasarkan Tipe</h5>
+        <select id="transaksiType" class="form-select">
+            <option value="masuk">Masuk</option>
+            <option value="keluar">Keluar</option>
+        </select>
+        <button class="btn btn-primary mt-2" id="transaksiByTypeBtn">Tampilkan Laporan</button>
+        <div id="transaksiByTypeResult" class="mt-3"></div>
+    </div>
+
+    <div class="mb-4">
+        <h5>Laporan Transaksi Berdasarkan Supplier</h5>
+        <label for="supplierId">Supplier ID:</label>
+        <input type="text" id="supplierId" class="form-control">
+        <button class="btn btn-primary mt-2" id="transaksiBySupplierBtn">Tampilkan Laporan</button>
+        <div id="transaksiBySupplierResult" class="mt-3"></div>
+    </div>
+
+    <div class="mb-4">
+        <h5>Daftar Supplier</h5>
+        <button class="btn btn-primary mt-2" id="suppliersBtn">Tampilkan Daftar Supplier</button>
+        <div id="suppliersResult" class="mt-3"></div>
+    </div>
+</div>
+
+<script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById("stockLessBtn").addEventListener("click", function() {
+        const limit = document.getElementById("limit").value;
+        fetch(`/api/laporan/stock_less?limit=${limit}`)
+            .then(response => response.json())
+            .then(data => {
+                displayStockLess(data.data);
+            })
+            .catch(error => {
+                console.error('Error fetching stock less:', error);
+            });
+    });
+
+    function displayStockLess(stockData) {
+        const resultDiv = document.getElementById("stockLessResult");
+        resultDiv.innerHTML = "<h6>Barang dengan Stok Menipis:</h6>";
+        const list = document.createElement("ul");
+        stockData.forEach(item => {
+            const listItem = document.createElement("li");
+            listItem.textContent = `${item.name} - Stok: ${item.stock}`;
+            list.appendChild(listItem);
+        });
+        resultDiv.appendChild(list);
+    }
+
+    document.getElementById("transaksiByDateBtn").addEventListener("click", function() {
+        const start = new Date(document.getElementById("startDate").value).getTime();
+        const end = new Date(document.getElementById("endDate").value).getTime();
+        fetch(`/api/laporan/transaksi_by_date?start=${start}&end=${end}`)
+            .then(response => response.json())
+            .then(data => {
+                displayTransaksiByDate(data.data);
+            })
+            .catch(error => {
+                console.error('Error fetching transaksi by date:', error);
+            });
+    });
+
+    function displayTransaksiByDate(transaksiData) {
+        const resultDiv = document.getElementById("transaksiByDateResult");
+        resultDiv.innerHTML = "<h6>Transaksi dari Tanggal yang Dipilih:</h6>";
+        const table = document.createElement("table");
+        table.className = "table";
+        const headerRow = `<tr><th>ID</th><th>Tanggal</th><th>Type</th><th>Total</th></tr>`;
+        table.innerHTML = headerRow;
+        transaksiData.forEach(item => {
+            const row = `<tr>
+                <td>${item.id}</td>
+                <td>${new Date(item.date).toLocaleDateString()}</td>
+                <td>${item.type}</td>
+                <td>${item.total}</td>
+            </tr>`;
+            table.innerHTML += row;
+        });
+        resultDiv.appendChild(table);
+    }
+
+    document.getElementById("transaksiByTypeBtn").addEventListener("click", function() {
+        const type = document.getElementById("transaksiType").value;
+        fetch(`/api/laporan/transaksi_by_type?type=${type}`)
+            .then(response => response.json())
+            .then(data => {
+                displayTransaksiByType(data.data);
+            })
+            .catch(error => {
+                console.error('Error fetching transaksi by type:', error);
+            });
+    });
+
+    function displayTransaksiByType(transaksiData) {
+        const resultDiv = document.getElementById("transaksiByTypeResult");
+        resultDiv.innerHTML = "<h6>Transaksi Berdasarkan Tipe:</h6>";
+        const table = document.createElement("table");
+        table.className = "table";
+        const headerRow = `<tr><th>ID</th><th>Tanggal</th><th>Type</th><th>Total</th></tr>`;
+        table.innerHTML = headerRow;
+        transaksiData.forEach(item => {
+            const row = `<tr>
+                <td>${item.id}</td>
+                <td>${new Date(item.date).toLocaleDateString()}</td>
+                <td>${item.type}</td>
+                <td>${item.total}</td>
+            </tr>`;
+            table.innerHTML += row;
+        });
+        resultDiv.appendChild(table);
+    }
+
+    document.getElementById("transaksiBySupplierBtn").addEventListener("click", function() {
+        const supplierId = document.getElementById("supplierId").value;
+        fetch(`/api/laporan/transaksi_by_supplier?id=${supplierId}`)
+            .then(response => response.json())
+            .then(data => {
+                displayTransaksiBySupplier(data.data);
+            })
+            .catch(error => {
+                console.error('Error fetching transaksi by supplier:', error);
+            });
+    });
+
+    function displayTransaksiBySupplier(transaksiData) {
+        const resultDiv = document.getElementById("transaksiBySupplierResult");
+        resultDiv.innerHTML = "<h6>Transaksi Berdasarkan Supplier:</h6>";
+        const table = document.createElement("table");
+        table.className = "table";
+        const headerRow = `<tr><th>ID</th><th>Tanggal</th><th>Type</th><th>Total</th></tr>`;
+        table.innerHTML = headerRow;
+        transaksiData.forEach(item => {
+            const row = `<tr>
+                <td>${item.id}</td>
+                <td>${new Date(item.date).toLocaleDateString()}</td>
+                <td>${item.type}</td>
+                <td>${item.total}</td>
+            </tr>`;
+            table.innerHTML += row;
+        });
+        resultDiv.appendChild(table);
+    }
+
+    document.getElementById("suppliersBtn").addEventListener("click", function() {
+        fetch(`/api/laporan/suppliers`)
+            .then(response => response.json())
+            .then(data => {
+                displaySuppliers(data.data);
+            })
+            .catch(error => {
+                console.error('Error fetching suppliers:', error);
+            });
+    });
+
+    function displaySuppliers(suppliers) {
+        const resultDiv = document.getElementById("suppliersResult");
+        resultDiv.innerHTML = "<h6>Daftar Supplier:</h6>";
+        const table = document.createElement("table");
+        table.className = "table";
+        const headerRow = `<tr><th>ID</th><th>Nama</th><th>Kontak</th><th>Alamat</th></tr>`;
+        table.innerHTML = headerRow;
+        suppliers.forEach(supplier => {
+            const row = `<tr>
+                <td>${supplier.id}</td>
+                <td>${supplier.name}</td>
+                <td>${supplier.contact}</td>
+                <td>${supplier.address}</td>
+            </tr>`;
+            table.innerHTML += row;
+        });
+        resultDiv.appendChild(table);
+    }
+</script>
+</body>
+</html>

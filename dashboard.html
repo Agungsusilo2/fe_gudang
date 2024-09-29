@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container" style="height: 100vh">
+    <div class="row justify-content-center align-items-center my-5">
+        <h1 class="text-center mb-5">Dashboard</h1>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white text-center">
+                    <h5>Ringkasan Stock Barang</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group ">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Barang A
+                            <span class="badge bg-danger">Stok: 2</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Barang B
+                            <span class="badge bg-warning">Stok: 5 (Menipis)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Barang C
+                            <span class="badge bg-success">Stok: 20</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white text-center">
+                    <h5>Ringkasan Transaksi</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Transaksi #1234</strong> - Barang Masuk
+                            <br>
+                            <small>12 September 2024</small>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Transaksi #1235</strong> - Barang Keluar
+                            <br>
+                            <small>14 September 2024</small>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Transaksi #1236</strong> - Barang Keluar
+                            <br>
+                            <small>15 September 2024</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white text-center">
+                    <h5>Total Barang</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h5>500</h5>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white text-center">
+                    <h5>Tatal Transaksi (per hari)</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h5>500</h5>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<footer class="text-center py-3 mt-3">
+    <div class="container">
+        <div class="mb-4">
+            <h4>Navigate cepat</h4>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6 mb-md-0 d-flex justify-content-center">
+                <button type="button" class="btn btn-light w-100 w-md-auto mb-4" id="barang">Manajemen Barang</button>
+            </div>
+            <div class="col-12 col-md-6 d-flex justify-content-center">
+                <button type="button" class="btn btn-light w-100 w-md-auto mb-4" id="transaksi">Transaksi</button>
+            </div>
+            <div class="col-12 col-md-6 d-flex justify-content-center ">
+                <button type="button" class="btn btn-light w-100 w-md-auto mb-4" id="supplier">Supplier</button>
+            </div>
+            <div class="col-12 col-md-6 d-flex justify-content-center">
+                <button type="button" class="btn btn-light w-100 w-md-auto mb-4">Laporan</button>
+            </div>
+            <div class="col-12 col-md-12 d-flex justify-content-center">
+                <button type="button" class="btn btn-light w-100 w-md-auto mb-4">User</button>
+            </div>
+        </div>
+    </div>
+</footer>
+<script>
+    var barang = document.getElementById("barang");
+    barang.addEventListener("click",()=> window.location.href = "barang.html")
+    var transaksi = document.getElementById("transaksi");
+    transaksi.addEventListener("click",()=>window.location.href="transaksi.html")
+    var supplier = document.getElementById("supplier");
+    supplier.addEventListener("click",()=>window.location.href="supplier.html")
+</script>
+</body>
+</html>
