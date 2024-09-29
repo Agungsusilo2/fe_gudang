@@ -296,7 +296,7 @@
             document.getElementById("supplierSelect").value = item.supplier ? item.supplier.id : "";
 
             const date = new Date(item.date * 1000);
-            const formattedDate = date.toISOString().split('T')[0]; // Mengambil bagian 'YYYY-MM-DD'
+            const formattedDate = date.toISOString().split('T')[0];
             document.getElementById("editDateTransaksi").value = formattedDate;
 
             document.getElementById("editTypeTransaksi").value = item.type;

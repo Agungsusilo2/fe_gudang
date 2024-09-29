@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <title>Laporan Manajemen</title>
     <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
+    <style>
+        @media print {
+            button, input, label {
+                display: none;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table, th, td {
+                border: 1px solid black;
+            }
+        }
+    </style>
+
 </head>
 <body>
 <div class="container mt-5">
@@ -14,6 +31,7 @@
         <label for="limit">Batas Jumlah Stok:</label>
         <input type="number" id="limit" class="form-control" value="10" min="1">
         <button class="btn btn-primary mt-2" id="stockLessBtn">Tampilkan Laporan</button>
+        <button class="btn btn-secondary mt-2" onclick="printDiv('stockLessResult')">Cetak Laporan</button>
         <div id="stockLessResult" class="mt-3"></div>
     </div>
 
@@ -24,6 +42,7 @@
         <label for="endDate">Tanggal Selesai:</label>
         <input type="date" id="endDate" class="form-control">
         <button class="btn btn-primary mt-2" id="transaksiByDateBtn">Tampilkan Laporan</button>
+        <button class="btn btn-secondary mt-2" onclick="printDiv('transaksiByDateResult')">Cetak Laporan</button>
         <div id="transaksiByDateResult" class="mt-3"></div>
     </div>
 
@@ -34,20 +53,25 @@
             <option value="keluar">Keluar</option>
         </select>
         <button class="btn btn-primary mt-2" id="transaksiByTypeBtn">Tampilkan Laporan</button>
+        <button class="btn btn-secondary mt-2" onclick="printDiv('transaksiByTypeResult')">Cetak Laporan</button>
         <div id="transaksiByTypeResult" class="mt-3"></div>
     </div>
 
     <div class="mb-4">
         <h5>Laporan Transaksi Berdasarkan Supplier</h5>
         <label for="supplierId">Supplier ID:</label>
-        <input type="text" id="supplierId" class="form-control">
+        <select id="supplierId" class="form-select" required>
+            <option value="" disabled selected>Select Supplier</option>
+        </select>
         <button class="btn btn-primary mt-2" id="transaksiBySupplierBtn">Tampilkan Laporan</button>
+        <button class="btn btn-secondary mt-2" onclick="printDiv('transaksiBySupplierResult')">Cetak Laporan</button>
         <div id="transaksiBySupplierResult" class="mt-3"></div>
     </div>
 
     <div class="mb-4">
         <h5>Daftar Supplier</h5>
         <button class="btn btn-primary mt-2" id="suppliersBtn">Tampilkan Daftar Supplier</button>
+        <button class="btn btn-secondary mt-2" onclick="printDiv('suppliersResult')">Cetak Laporan</button>
         <div id="suppliersResult" class="mt-3"></div>
     </div>
 </div>
@@ -56,7 +80,7 @@
 <script>
     document.getElementById("stockLessBtn").addEventListener("click", function() {
         const limit = document.getElementById("limit").value;
-        fetch(`/api/laporan/stock_less?limit=${limit}`)
+        fetch(`http://localhost:8080/api/laporan/stock_less?limit=${limit}`)
             .then(response => response.json())
             .then(data => {
                 displayStockLess(data.data);
@@ -79,9 +103,11 @@
     }
 
     document.getElementById("transaksiByDateBtn").addEventListener("click", function() {
-        const start = new Date(document.getElementById("startDate").value).getTime();
-        const end = new Date(document.getElementById("endDate").value).getTime();
-        fetch(`/api/laporan/transaksi_by_date?start=${start}&end=${end}`)
+        const start = new Date(document.getElementById("startDate").value).getTime()/1000;
+        const end = new Date(document.getElementById("endDate").value).getTime()/1000;
+        console.log(start)
+        console.log(end)
+        fetch(`http://localhost:8080/api/laporan/transaksi_by_date?start=${start}&end=${end}`)
             .then(response => response.json())
             .then(data => {
                 displayTransaksiByDate(data.data);
@@ -99,9 +125,12 @@
         const headerRow = `<tr><th>ID</th><th>Tanggal</th><th>Type</th><th>Total</th></tr>`;
         table.innerHTML = headerRow;
         transaksiData.forEach(item => {
+            const date = new Date(item.date * 1000);
+            const formattedDate = date.toISOString().split('T')[0];
+            console.log(formattedDate)
             const row = `<tr>
                 <td>${item.id}</td>
-                <td>${new Date(item.date).toLocaleDateString()}</td>
+                <td>${formattedDate}</td>
                 <td>${item.type}</td>
                 <td>${item.total}</td>
             </tr>`;
@@ -112,7 +141,7 @@
 
     document.getElementById("transaksiByTypeBtn").addEventListener("click", function() {
         const type = document.getElementById("transaksiType").value;
-        fetch(`/api/laporan/transaksi_by_type?type=${type}`)
+        fetch(`http://localhost:8080/api/laporan/transaksi_by_type?type=${type}`)
             .then(response => response.json())
             .then(data => {
                 displayTransaksiByType(data.data);
@@ -130,9 +159,11 @@
         const headerRow = `<tr><th>ID</th><th>Tanggal</th><th>Type</th><th>Total</th></tr>`;
         table.innerHTML = headerRow;
         transaksiData.forEach(item => {
+            const date = new Date(item.date * 1000);
+            const formattedDate = date.toISOString().split('T')[0];
             const row = `<tr>
                 <td>${item.id}</td>
-                <td>${new Date(item.date).toLocaleDateString()}</td>
+                <td>${formattedDate}</td>
                 <td>${item.type}</td>
                 <td>${item.total}</td>
             </tr>`;
@@ -143,7 +174,7 @@
 
     document.getElementById("transaksiBySupplierBtn").addEventListener("click", function() {
         const supplierId = document.getElementById("supplierId").value;
-        fetch(`/api/laporan/transaksi_by_supplier?id=${supplierId}`)
+        fetch(`http://localhost:8080/api/laporan/transaksi_by_supplier?id=${supplierId}`)
             .then(response => response.json())
             .then(data => {
                 displayTransaksiBySupplier(data.data);
@@ -161,9 +192,11 @@
         const headerRow = `<tr><th>ID</th><th>Tanggal</th><th>Type</th><th>Total</th></tr>`;
         table.innerHTML = headerRow;
         transaksiData.forEach(item => {
+            const date = new Date(item.date * 1000);
+            const formattedDate = date.toISOString().split('T')[0];
             const row = `<tr>
                 <td>${item.id}</td>
-                <td>${new Date(item.date).toLocaleDateString()}</td>
+                <td>${formattedDate}</td>
                 <td>${item.type}</td>
                 <td>${item.total}</td>
             </tr>`;
@@ -173,7 +206,7 @@
     }
 
     document.getElementById("suppliersBtn").addEventListener("click", function() {
-        fetch(`/api/laporan/suppliers`)
+        fetch(`http://localhost:8080/api/laporan/suppliers`)
             .then(response => response.json())
             .then(data => {
                 displaySuppliers(data.data);
@@ -201,6 +234,35 @@
         });
         resultDiv.appendChild(table);
     }
+
+    function printDiv(divId) {
+        var divContents = document.getElementById(divId).innerHTML;
+        var a = window.open('', '', 'height=600, width=800');
+        a.document.write('<html><head><title>Cetak Laporan</title>');
+        a.document.write('</head><body>');
+        a.document.write(divContents);
+        a.document.write('</body></html>');
+        a.document.close();
+        a.print();
+    }
+
+    fetchSupplier()
+
+    function fetchSupplier() {
+        fetch("http://localhost:8080/api/supplier", {
+            method: 'GET'
+        }).then(response => response.json())
+            .then(data => {
+                const barangSelect = document.getElementById("supplierId");
+                data.data.forEach(item => {
+                    let option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    barangSelect.appendChild(option);
+                });
+            }).catch(error => console.error('Error fetching Barang:', error));
+    }
+
 </script>
 </body>
 </html>
