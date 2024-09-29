@@ -248,12 +248,14 @@
 
         items.forEach(item => {
             date = new Date(item.date * 1000).toLocaleDateString()
+            let supplierName = item.supplier ? item.supplier.name : 'User';
+
             let newRow = `<tr>
                 <td>${date}</td>
                 <td>${item.type}</td>
                 <td>${item.barang.name}</td>
                 <td>${item.total}</td>
-                <td>${item.supplier.name}</td>
+                <td>${supplierName}</td>
                 <td>
                     <button class="btn btn-warning btn-sm editBtn" data-id="${item.id}" data-bs-toggle="modal">Edit</button>
                     <button class="btn btn-danger btn-sm deleteBtn" data-id="${item.id}">Delete</button>
