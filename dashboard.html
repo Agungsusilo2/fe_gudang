@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="./bootstrap-5.0.2-dist/css/bootstrap.min.css">
 </head>
 <body>
-<div class="container" style="height: 100vh">
+<div class="container mb-4" style="height: 100vh">
     <div class="row justify-content-center align-items-center my-5">
         <h1 class="text-center mb-5">Dashboard</h1>
         <div class="col-md-6 mb-4">
@@ -57,7 +57,7 @@
 
     </div>
 </div>
-<footer class="text-center py-3 mt-3">
+<footer class="text-center py-3 mt-5">
     <div class="container">
         <div class="mb-4">
             <h4>Navigate cepat</h4>
@@ -73,10 +73,10 @@
                 <button type="button" class="btn btn-light w-100 w-md-auto mb-4" id="supplier">Supplier</button>
             </div>
             <div class="col-12 col-md-6 d-flex justify-content-center">
-                <button type="button" class="btn btn-light w-100 w-md-auto mb-4">Laporan</button>
+                <button type="button" class="btn btn-light w-100 w-md-auto mb-4" id="laporan">Laporan</button>
             </div>
             <div class="col-12 col-md-12 d-flex justify-content-center">
-                <button type="button" class="btn btn-light w-100 w-md-auto mb-4">User</button>
+                <button type="button" class="btn btn-light w-100 w-md-auto mb-4" id="user">User</button>
             </div>
         </div>
     </div>
@@ -88,7 +88,10 @@
     transaksi.addEventListener("click", () => window.location.href = "transaksi.html")
     var supplier = document.getElementById("supplier");
     supplier.addEventListener("click", () => window.location.href = "supplier.html")
-
+    var laporan = document.getElementById("laporan");
+    laporan.addEventListener("click",()=> window.location.href="laporan.html")
+    var user = document.getElementById("user");
+    user.addEventListener("click",()=> window.location.href = "user.html")
 
     fetchCountBarang()
 
