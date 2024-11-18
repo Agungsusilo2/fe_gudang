@@ -78,9 +78,18 @@
 
 <script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    var token = localStorage.getItem("jwtToken");
+    if(!token){
+        window.location.href = "login.html";
+    }
     document.getElementById("stockLessBtn").addEventListener("click", function() {
         const limit = document.getElementById("limit").value;
-        fetch(`http://localhost:8080/api/laporan/stock_less?limit=${limit}`)
+        fetch(`http://localhost:8080/api/laporan/stock_less?limit=${limit}`,{
+            method:"GET",
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 displayStockLess(data.data);
@@ -107,7 +116,12 @@
         const end = new Date(document.getElementById("endDate").value).getTime()/1000;
         console.log(start)
         console.log(end)
-        fetch(`http://localhost:8080/api/laporan/transaksi_by_date?start=${start}&end=${end}`)
+        fetch(`http://localhost:8080/api/laporan/transaksi_by_date?start=${start}&end=${end}`,{
+            method:"GET",
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 displayTransaksiByDate(data.data);
@@ -127,7 +141,6 @@
         transaksiData.forEach(item => {
             const date = new Date(item.date * 1000);
             const formattedDate = date.toISOString().split('T')[0];
-            console.log(formattedDate)
             const row = `<tr>
                 <td>${item.id}</td>
                 <td>${formattedDate}</td>
@@ -141,7 +154,12 @@
 
     document.getElementById("transaksiByTypeBtn").addEventListener("click", function() {
         const type = document.getElementById("transaksiType").value;
-        fetch(`http://localhost:8080/api/laporan/transaksi_by_type?type=${type}`)
+        fetch(`http://localhost:8080/api/laporan/transaksi_by_type?type=${type}`,{
+            method:"GET",
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 displayTransaksiByType(data.data);
@@ -174,7 +192,12 @@
 
     document.getElementById("transaksiBySupplierBtn").addEventListener("click", function() {
         const supplierId = document.getElementById("supplierId").value;
-        fetch(`http://localhost:8080/api/laporan/transaksi_by_supplier?id=${supplierId}`)
+        fetch(`http://localhost:8080/api/laporan/transaksi_by_supplier?id=${supplierId}`,{
+            method:"GET",
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 displayTransaksiBySupplier(data.data);
@@ -206,7 +229,12 @@
     }
 
     document.getElementById("suppliersBtn").addEventListener("click", function() {
-        fetch(`http://localhost:8080/api/laporan/suppliers`)
+        fetch(`http://localhost:8080/api/laporan/suppliers`,{
+            method:"GET",
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 displaySuppliers(data.data);
@@ -250,7 +278,10 @@
 
     function fetchSupplier() {
         fetch("http://localhost:8080/api/supplier", {
-            method: 'GET'
+            method: 'GET',
+            headers:{
+                "Authorization": `Bearer ${token}`,
+            }
         }).then(response => response.json())
             .then(data => {
                 const barangSelect = document.getElementById("supplierId");
@@ -262,6 +293,8 @@
                 });
             }).catch(error => console.error('Error fetching Barang:', error));
     }
+
+    new CharacterData()
 
 </script>
 </body>

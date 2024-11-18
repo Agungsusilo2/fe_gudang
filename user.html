@@ -109,6 +109,11 @@
 
 <script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
+    var token = localStorage.getItem("jwtToken");
+    if(!token){
+        window.location.href = "login.html";
+    }
     document.getElementById("tambah_user").addEventListener("click", function () {
         clearAddForm();
         var addModal = new bootstrap.Modal(document.getElementById('addModal'));
@@ -166,7 +171,8 @@
         fetch(`http://localhost:8080/api/user/register`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify(data)
         }).then(response => {
@@ -189,7 +195,8 @@
         fetch(`http://localhost:8080/api/users/${id}`, {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify(data)
         }).then(response => {
@@ -210,7 +217,10 @@
 
     function fetchAll() {
         fetch("http://localhost:8080/api/users", {
-            method: 'GET'
+            method: 'GET',
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
         }).then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok ' + response.statusText);
@@ -231,7 +241,10 @@
 
     function fetchSearch(keyword) {
         fetch(`http://localhost:8080/api/users/search?keyword=${encodeURIComponent(keyword)}`, {
-            method: 'GET'
+            method: 'GET',
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
         }).then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok ' + response.statusText);
@@ -279,7 +292,8 @@
         fetch(`http://localhost:8080/api/users/${id}`, {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             }
         }).then(response => {
             if (!response.ok) {
@@ -300,7 +314,10 @@
     function fetchDelete(id) {
         if (confirm("Apakah Anda yakin ingin menghapus user ini?")) {
             fetch(`http://localhost:8080/api/users/${id}`, {
-                method: "DELETE"
+                method: "DELETE",
+                headers:{
+                    "Authorization": `Bearer ${token}`
+                }
             }).then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok ' + response.statusText);

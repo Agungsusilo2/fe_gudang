@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
@@ -71,8 +71,11 @@
                 return response.json();
             })
             .then(data => {
-                console.log('Success:', data);
-                window.location.href = "dashboard.html";
+                const token = data.data;
+                if(token){
+                    localStorage.setItem('jwtToken',token);
+                    window.location.href = "dashboard.html";
+                }
             })
             .catch(error => {
                 console.error('Error:', error);

@@ -86,9 +86,16 @@
 </div>
 <script src="./bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    var token = localStorage.getItem("jwtToken");
+    if(!token){
+        window.location.href = "login.html"
+    }
     function fetchBarang() {
         fetch("http://localhost:8080/api/barang", {
-            method: 'GET'
+            method: 'GET',
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
         }).then(response => response.json())
             .then(data => {
                 const barangSelect = document.getElementById("barangSelect");
@@ -103,7 +110,10 @@
 
     function fetchSupplier() {
         fetch("http://localhost:8080/api/supplier", {
-            method: 'GET'
+            method: 'GET',
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
         }).then(response => response.json())
             .then(data => {
                 const supplierSelect = document.getElementById("supplierSelect");
@@ -162,7 +172,8 @@
         fetch(`http://localhost:8080/api/transaksi/${id}`, {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify(data)
         }).then(response => {
@@ -185,7 +196,8 @@
         fetch(`http://localhost:8080/api/transaksi/in`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify(data)
         }).then(response => {
@@ -208,7 +220,8 @@
         fetch(`http://localhost:8080/api/transaksi/out`, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify(data)
         }).then(response => {
@@ -229,7 +242,10 @@
 
     function fetchAll() {
         fetch("http://localhost:8080/api/transaksi", {
-            method: 'GET'
+            method: 'GET',
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
         }).then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok ' + response.statusText);
@@ -284,7 +300,8 @@
         fetch(`http://localhost:8080/api/transaksi/${id}`, {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
             }
         }).then(response => {
             if (!response.ok) {
@@ -315,7 +332,10 @@
 
     function fetchDelete(id) {
         fetch(`http://localhost:8080/api/transaksi/${id}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
         })
             .then(response => {
                 if (!response.ok) {
@@ -340,7 +360,10 @@
 
     function fetchSearch(keyword) {
         fetch(`http://localhost:8080/api/transaksi/search?keyword=${encodeURIComponent(keyword)}`, {
-            method: 'GET'
+            method: 'GET',
+            headers:{
+                "Authorization": `Bearer ${token}`
+            }
         }).then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok ' + response.statusText);
